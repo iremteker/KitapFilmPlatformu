@@ -17,3 +17,15 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Node / React
+node_modules/
+dist/
+
+# Env
+.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
