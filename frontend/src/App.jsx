@@ -28,9 +28,34 @@ const handleSubmit = async (e) => {
     const data = await response.json();
 
     console.log("Backend response:", data);
+
+    if (response.ok && data.access_token) {
+      localStorage.setItem("access_token", data.access_token);
+      console.log("Token kaydedildi:", data.access_token);
+    } else {
+      console.error("Login başarısız:");
+    }
+
   } catch (error) {
     console.error("Login error:", error);
   }
+
+  fetchMe();
+};
+
+
+const fetchMe = async () => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await fetch("http://127.0.0.1:8000/users/me",{
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+  console.log("Current user:", data);
+
 };
 
 
