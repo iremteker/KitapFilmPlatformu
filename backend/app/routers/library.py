@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-
+from app.schemas.library import LibraryCreate
 from app.database import get_db
 from app.dependencies.auth import get_current_user
 from app.models.user import User
@@ -20,16 +20,16 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED
 )
 def add_to_library(
-    item_id: int,
-    item_type: str,  # "book" or "film"
+    data: LibraryCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     return add_item_to_library(
         db=db,
         user_id=current_user.id,
-        item_id=item_id,
-        item_type=item_type
+        item_id=data.item_id,
+        item_type=data.item_type,
+        status=data.status
     )
 
 

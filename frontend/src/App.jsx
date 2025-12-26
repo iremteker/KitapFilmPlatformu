@@ -1,10 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchBooks, fetchFilms, addToLibrary } from "./api";
 
 function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
+  const [books, setBooks] = useState([]);
+  const [films, setFilms] = useState([]);
+
+  useEffect(() => {
+    fetchBooks();
+    fetchFilms();
+  }, []);
+
+  const fetchBooks = async () => {
+    const res = await fetch("http://127.0.0.1:8000/books");
+    const data = await res.json();
+    setBooks(data);
+  };
+
+  const fetchFilms = async () => {
+    const res = await fetch("http://127.0.0.1:8000/films");
+    const data = await res.json();
+    setFilms(data);
+  };
 
 
 const handleSubmit = async (e) => {
@@ -106,6 +126,39 @@ const fetchMe = async () => {
 
         <button type="submit">Login</button>
       </form>
+
+      <hr />
+
+<h2>Kitaplar📚</h2>
+{books.map((book) => (
+  <div key={book.id}>
+    <strong>{book.title}</strong> – {book.author}
+    <button
+      onClick={() =>
+        addToLibrary(book.id, "book", localStorage.getItem("access_token"))
+      }
+    >
+      Kütüphaneye Ekle
+    </button>
+  </div>
+))}
+
+<hr />
+
+<h2>Filmler🎬</h2>
+{films.map((film) => (
+  <div key={film.id}>
+    <strong>{film.title}</strong> – {film.director}
+    <button
+      onClick={() =>
+        addToLibrary(film.id, "film", localStorage.getItem("access_token"))
+      }
+    >
+      Kütüphaneye Ekle
+    </button>
+  </div>
+))}
+
     </div>
   );
 }
