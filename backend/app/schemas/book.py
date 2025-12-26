@@ -15,5 +15,12 @@ class BookResponse(BaseModel):
     description: Optional[str]
     created_at: datetime
 
+
+class BookUpdate(BaseModel):
+    title: Optional[str] = None
+    author: Optional[str] = None
+    description: Optional[str] = None
+    
+
     class Config:
         from_attributes = True
