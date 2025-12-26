@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchBooks, fetchFilms, addToLibrary } from "./api";
+import BookCard from "./components/BookCard";
+import FilmCard from "./components/FilmCard";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -90,15 +92,15 @@ const fetchMe = async () => {
 
   return (
     <div style={{ padding: "2rem", maxWidth: "400px" }}>
-      <h1>Login</h1>
+      <h1>Kitap&Film Platformu</h1>
 
       {currentUser && (
         <>
-        <p style={{ color: "green"}}>
+        <p style={{ color: "lightgreen"}}>
           Hoş geldiniz, {currentUser.username}
         </p>
         <button onClick={handleLogout}>
-          Logout
+          Çıkış Yap
         </button>
         </>
         )}
@@ -115,7 +117,7 @@ const fetchMe = async () => {
         </div>
 
         <div style={{ marginBottom: "1rem" }}>
-          <label>Password</label><br />
+          <label>Şifre</label><br />
           <input
             type="password"
             value={password}
@@ -124,41 +126,38 @@ const fetchMe = async () => {
           />
         </div>
 
-        <button type="submit">Login</button>
+        <button type="submit">Giriş Yap</button>
       </form>
 
       <hr />
 
-<h2>Kitaplar📚</h2>
-{books.map((book) => (
-  <div key={book.id}>
-    <strong>{book.title}</strong> – {book.author}
-    <button
-      onClick={() =>
-        addToLibrary(book.id, "book", localStorage.getItem("access_token"))
-      }
-    >
-      Kütüphaneye Ekle
-    </button>
-  </div>
-))}
+      <h2>Kitaplar📚</h2>
+      <div className="grid">
+        {books.map((book) => (
+          <BookCard
+            key={book.id}
+            book={book}
+            onAdd={(id) =>
+              addToLibrary(id, "book", localStorage.getItem("access_token"))
+            }
+          />
+        ))}
+      </div>
 
-<hr />
+      <hr />
 
-<h2>Filmler🎬</h2>
-{films.map((film) => (
-  <div key={film.id}>
-    <strong>{film.title}</strong> – {film.director}
-    <button
-      onClick={() =>
-        addToLibrary(film.id, "film", localStorage.getItem("access_token"))
-      }
-    >
-      Kütüphaneye Ekle
-    </button>
-  </div>
-))}
-
+      <h2>Filmler🎬</h2>
+      <div className="grid">
+        {films.map((film) => (
+          <FilmCard
+            key={film.id}
+            film={film}
+            onAdd={(id) =>
+              addToLibrary(id, "film", localStorage.getItem("access_token"))
+            }
+          />
+        ))}
+      </div>
     </div>
   );
 }

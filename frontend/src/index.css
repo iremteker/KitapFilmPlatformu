@@ -1,3 +1,4 @@
+/*
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -66,3 +67,52 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+*/
+
+body {
+  background: #67c3e8;
+  color: #eee;
+  font-family: Arial, sans-serif;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: #1e1e1e;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #333;
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+.card .desc {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+button {
+  background: #1b8712;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #555;
+}
+
+input {
+  display: block;
+  margin-bottom: 0.5rem;
+  padding: 0.4rem;
+}
+
