@@ -3,6 +3,7 @@ import { useState } from "react";
 function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [user, setUser] = useState(null);
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -54,7 +55,7 @@ const fetchMe = async () => {
   });
 
   const data = await response.json();
-  console.log("Current user:", data);
+  setUser(data);
 
 };
 
@@ -62,6 +63,12 @@ const fetchMe = async () => {
   return (
     <div style={{ padding: "2rem", maxWidth: "400px" }}>
       <h1>Login</h1>
+
+      {user && (
+        <div style={{ marginBottom: "1rem", color: "green"}}>
+          Hoş geldin, <strong>{user.username}</strong>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "1rem" }}>
