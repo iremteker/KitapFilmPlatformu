@@ -3,7 +3,9 @@ import { useState } from "react";
 function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [currentUser, setCurrentUser] = useState(null);
+
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -44,6 +46,12 @@ const handleSubmit = async (e) => {
   fetchMe();
 };
 
+const handleLogout = () => {
+  localStorage.removeItem("access_token");
+  setToken(null);
+  setCurrentUser(null);
+};
+
 
 const fetchMe = async () => {
   const token = localStorage.getItem("access_token");
@@ -55,7 +63,7 @@ const fetchMe = async () => {
   });
 
   const data = await response.json();
-  setUser(data);
+  setCurrentUser(data);
 
 };
 
@@ -64,11 +72,16 @@ const fetchMe = async () => {
     <div style={{ padding: "2rem", maxWidth: "400px" }}>
       <h1>Login</h1>
 
-      {user && (
-        <div style={{ marginBottom: "1rem", color: "green"}}>
-          Hoş geldin, <strong>{user.username}</strong>
-        </div>
-      )}
+      {currentUser && (
+        <>
+        <p style={{ color: "green"}}>
+          Hoş geldiniz, {currentUser.username}
+        </p>
+        <button onClick={handleLogout}>
+          Logout
+        </button>
+        </>
+        )}
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "1rem" }}>
