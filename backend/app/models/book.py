@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text
 from app.database import Base
+from sqlalchemy import DateTime
+from sqlalchemy.sql import func
 
 class Book(Base):
     __tablename__ = "books"
@@ -10,4 +12,5 @@ class Book(Base):
     publish_year = Column(Integer)
     description = Column(Text)
     cover_image = Column(String) # URL or path to the cover image file
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
