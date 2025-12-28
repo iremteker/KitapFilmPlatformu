@@ -2,56 +2,60 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.film import FilmCreate, FilmUpdate, FilmResponse
+from app.schemas.film import FilmCreate, FilmResponse, FilmUpdate
 from app.services.film_service import (
     create_film,
     get_all_films,
-    get_film_by_id,
-    update_film,
     delete_film,
+    update_film
 )
+from app.dependencies.auth import require_admin
 
 router = APIRouter(
     prefix="/films",
     tags=["Films"]
 )
 
-
-@router.post("/", response_model=FilmResponse, status_code=status.HTTP_201_CREATED)
-def create_film_endpoint(
-    film_data: FilmCreate,
-    db: Session = Depends(get_db)
-):
-    return create_film(db, film_data)
-
-
 @router.get("/", response_model=list[FilmResponse])
 def list_films(db: Session = Depends(get_db)):
     return get_all_films(db)
 
-
-@router.get("/{film_id}", response_model=FilmResponse)
-def get_film(film_id: int, db: Session = Depends(get_db)):
-    film = get_film_by_id(db, film_id)
-    if not film:
-        raise HTTPException(status_code=404, detail="Film not found")
-    return film
-
-
-@router.put("/{film_id}", response_model=FilmResponse)
-def update_film_endpoint(
-    film_id: int,
-    film_data: FilmUpdate,
-    db: Session = Depends(get_db)
+@router.post(
+    "/admin",
+    response_model=FilmResponse,
+    status_code=status.HTTP_201_CREATED
+)
+def admin_create_film(
+    film: FilmCreate,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin)
 ):
-    film = update_film(db, film_id, film_data)
-    if not film:
+    return create_film(db, film)
+
+@router.put(
+    "/admin/{film_id}",
+    response_model=FilmResponse
+)
+def admin_update_film(
+    film_id: int,
+    film: FilmUpdate,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin)
+):
+    updated_film = update_film(db, film_id, film)
+    if not updated_film:
         raise HTTPException(status_code=404, detail="Film not found")
-    return film
+    return updated_film
 
-
-@router.delete("/{film_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_film_endpoint(film_id: int, db: Session = Depends(get_db)):
-    film = delete_film(db, film_id)
-    if not film:
+@router.delete(
+    "/admin/{film_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def admin_delete_film(
+    film_id: int,
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin)
+):
+    success = delete_film(db, film_id)
+    if not success:
         raise HTTPException(status_code=404, detail="Film not found")

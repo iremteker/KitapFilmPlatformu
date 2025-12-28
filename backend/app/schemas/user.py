@@ -1,30 +1,33 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+
 
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
-    password: str = Field(min_length=6, max_length=72)
+    password: str
 
 
-from datetime import datetime
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None
+    profile_image: Optional[str] = None
+    bio: Optional[str] = None
+
 
 class UserResponse(BaseModel):
     id: int
     username: str
     email: EmailStr
-    created_at: datetime
+    is_admin: bool
+    profile_image: Optional[str] = None
+    bio: Optional[str] = None
 
     class Config:
-        orm_mode = True
-
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+        from_attributes = True
 
 
 class TokenResponse(BaseModel):
     access_token: str
-    token_type: str = "bearer"
-        
-
+    token_type: str

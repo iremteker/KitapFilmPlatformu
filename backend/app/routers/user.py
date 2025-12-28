@@ -8,11 +8,12 @@ from app.utils.security import verify_password, create_access_token
 from app.database import get_db
 from app.schemas.user import (
     TokenResponse,
-    UserCreate, 
+    UserCreate,
+    UserUpdate,
     UserResponse
 )
 
-from app.services.user_service import create_user
+from app.services.user_service import create_user, update_user
 
 router = APIRouter(
     prefix="/users",
@@ -50,7 +51,7 @@ def login_user(
 ):
     user = db.query(User).filter(User.email == form_data.username).first()
 
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Geçersiz email veya şifre",
@@ -68,3 +69,23 @@ def login_user(
 @router.get("/me", response_model=UserResponse)
 def read_current_user(current_user: User = Depends(get_current_user)):
     return current_user
+
+@router.put("/me", response_model=UserResponse)
+def update_current_user(
+    user_data: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        updated_user = update_user(db, current_user.id, user_data)
+        if not updated_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Kullanıcı bulunamadı"
+            )
+        return updated_user
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

@@ -1,164 +1,113 @@
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { fetchBooks, fetchFilms, addToLibrary } from "./api";
-import BookCard from "./components/BookCard";
-import FilmCard from "./components/FilmCard";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import HomePage from "./pages/HomePage";
+import AdminPage from "./pages/AdminPage";
+import ProfilePage from "./pages/ProfilePage";
+import LibraryPage from "./pages/LibraryPage";
+import Navbar from "./components/Navbar";
+import { fetchMe } from "./api";
 
 function App() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [token, setToken] = useState(localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
-  const [books, setBooks] = useState([]);
-  const [films, setFilms] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBooks();
-    fetchFilms();
-  }, []);
+    const token = localStorage.getItem("access_token");
 
-  const fetchBooks = async () => {
-    const res = await fetch("http://127.0.0.1:8000/books");
-    const data = await res.json();
-    setBooks(data);
-  };
-
-  const fetchFilms = async () => {
-    const res = await fetch("http://127.0.0.1:8000/films");
-    const data = await res.json();
-    setFilms(data);
-  };
-
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  console.log("Sending:", {
-  email: email,
-  password: password,
-});
-
-
-  try {
-    const response = await fetch("http://127.0.0.1:8000/users/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        username: email,
-        password: password,
-      }),
-    });
-
-    const data = await response.json();
-
-    console.log("Backend response:", data);
-
-    if (response.ok && data.access_token) {
-      localStorage.setItem("access_token", data.access_token);
-      console.log("Token kaydedildi:", data.access_token);
-    } else {
-      console.error("Login başarısız:");
+    if (!token) {
+      setLoading(false);
+      return;
     }
 
-  } catch (error) {
-    console.error("Login error:", error);
-  }
+    fetchMe(token)
+      .then((user) => setCurrentUser(user))
+      .catch(() => {
+        localStorage.removeItem("access_token");
+        setCurrentUser(null);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  fetchMe();
-};
-
-const handleLogout = () => {
-  localStorage.removeItem("access_token");
-  setToken(null);
-  setCurrentUser(null);
-};
-
-
-const fetchMe = async () => {
-  const token = localStorage.getItem("access_token");
-
-  const response = await fetch("http://127.0.0.1:8000/users/me",{
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await response.json();
-  setCurrentUser(data);
-
-};
-
+  if (loading) return <p>Yükleniyor...</p>;
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "400px" }}>
-      <h1>Kitap&Film Platformu</h1>
+    <>
+      {currentUser && <Navbar currentUser={currentUser} setCurrentUser={setCurrentUser} />}
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <LoginPage setCurrentUser={setCurrentUser} />
+            )
+          }
+        />
 
-      {currentUser && (
-        <>
-        <p style={{ color: "lightgreen"}}>
-          Hoş geldiniz, {currentUser.username}
-        </p>
-        <button onClick={handleLogout}>
-          Çıkış Yap
-        </button>
-        </>
-        )}
+        <Route
+          path="/register"
+          element={
+            currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <RegisterPage setCurrentUser={setCurrentUser} />
+            )
+          }
+        />
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Email</label><br />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ width: "100%" }}
-          />
-        </div>
+        <Route
+          path="/"
+          element={
+            currentUser ? (
+              <HomePage currentUser={currentUser} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label>Şifre</label><br />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%" }}
-          />
-        </div>
+        <Route
+          path="/profile"
+          element={
+            currentUser ? (
+              <ProfilePage currentUser={currentUser} setCurrentUser={setCurrentUser} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
 
-        <button type="submit">Giriş Yap</button>
-      </form>
+        <Route
+          path="/library"
+          element={
+            currentUser ? (
+              <LibraryPage currentUser={currentUser} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
 
-      <hr />
+        <Route
+          path="/admin"
+          element={
+            currentUser && currentUser.is_admin ? (
+              <AdminPage />
+            ) : currentUser ? (
+              <Navigate to="/" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
 
-      <h2>Kitaplar📚</h2>
-      <div className="grid">
-        {books.map((book) => (
-          <BookCard
-            key={book.id}
-            book={book}
-            onAdd={(id) =>
-              addToLibrary(id, "book", localStorage.getItem("access_token"))
-            }
-          />
-        ))}
-      </div>
-
-      <hr />
-
-      <h2>Filmler🎬</h2>
-      <div className="grid">
-        {films.map((film) => (
-          <FilmCard
-            key={film.id}
-            film={film}
-            onAdd={(id) =>
-              addToLibrary(id, "film", localStorage.getItem("access_token"))
-            }
-          />
-        ))}
-      </div>
-    </div>
+        {/* Güvenlik için fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 

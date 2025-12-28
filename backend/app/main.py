@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import user, book, film, library
+from app.routers import user, book, film, library, rating, comment
 
 app = FastAPI()
 
@@ -16,6 +16,8 @@ app.include_router(user.router)
 app.include_router(book.router)
 app.include_router(film.router)
 app.include_router(library.router)
+app.include_router(rating.router)
+app.include_router(comment.router)
 
 @app.get("/")
 def home():
